@@ -34,7 +34,7 @@ const Header = () => {
     <header className="border-b">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold mr-2">CGPA Tracker</h1>
+          <h1 className="text-xl font-bold mr-2">CGPA Calculator</h1>
           <div className="ml-6 flex items-center gap-2">
             <Button 
               variant="ghost" 
