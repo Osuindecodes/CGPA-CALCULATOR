@@ -6,7 +6,7 @@ export interface Course {
   id: string;
   name: string;
   creditUnits: number;
-  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  grade: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 }
 
 interface CGPAState {
@@ -40,6 +40,7 @@ export const gradePoints = {
   B: 4,
   C: 3,
   D: 2,
+  E: 1,
   F: 0,
 };
 

@@ -51,35 +51,35 @@ export const generatePDF = (courses: Course[], summary: CGPASummary) => {
   doc.setFontSize(14);
   doc.text('CGPA Summary', 14, finalY);
   doc.setFontSize(12);
+
+  // Explanation of calculation
+  doc.setFontSize(10);
+  doc.text('Formula: CGPA = Total Grade Points / Total Credit Units', 14, finalY + 45);
   
   doc.text(`Total Credit Units: ${summary.totalCredits}`, 14, finalY + 10);
   doc.text(`Total Grade Points: ${summary.totalPoints}`, 14, finalY + 20);
   doc.text(`CGPA = ${summary.cgpa}`, 14, finalY + 30);
 
-  // Explanation of calculation
-  doc.setFontSize(10);
-  doc.text('Formula: CGPA = Total Grade Points / Total Credit Units', 14, finalY + 45);
-
-  // Grade scale explanation
-  doc.setFontSize(12);
-  doc.text('Grade Scale:', 14, finalY + 60);
+  // // Grade scale explanation
+  // doc.setFontSize(12);
+  // doc.text('Grade Scale:', 14, finalY + 60);
   
-  const gradeScale = [
-    ['A', '5.0', 'Excellent'],
-    ['B', '4.0', 'Very Good'],
-    ['C', '3.0', 'Good'],
-    ['D', '2.0', 'Pass'],
-    ['F', '0.0', 'Fail']
-  ];
+  // const gradeScale = [
+  //   ['A', '5.0', 'Excellent'],
+  //   ['B', '4.0', 'Very Good'],
+  //   ['C', '3.0', 'Good'],
+  //   ['D', '2.0', 'Pass'],
+  //   ['F', '0.0', 'Fail']
+  // ];
   
-  doc.autoTable({
-    startY: finalY + 65,
-    head: [['Grade', 'Points', 'Description']],
-    body: gradeScale,
-    headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255] },
-    margin: { left: 14 },
-    styles: { fontSize: 10 },
-  });
+  // doc.autoTable({
+  //   startY: finalY + 65,
+  //   head: [['Grade', 'Points', 'Description']],
+  //   body: gradeScale,
+  //   headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255] },
+  //   margin: { left: 14 },
+  //   styles: { fontSize: 10 },
+  // });
 
   // Save the PDF
   doc.save('CGPA_Report.pdf');

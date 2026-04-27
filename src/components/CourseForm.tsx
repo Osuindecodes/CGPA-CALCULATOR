@@ -15,7 +15,7 @@ const CourseForm = () => {
   
   const [name, setName] = useState('');
   const [creditUnits, setCreditUnits] = useState<number | ''>('');
-  const [grade, setGrade] = useState<'A' | 'B' | 'C' | 'D' | 'F' | ''>('');
+  const [grade, setGrade] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>('');
   const [nameError, setNameError] = useState('');
   const [creditError, setCreditError] = useState('');
   const [gradeError, setGradeError] = useState('');
@@ -38,8 +38,8 @@ const CourseForm = () => {
     if (creditUnits === '') {
       setCreditError('Credit units are required');
       isValid = false;
-    } else if (typeof creditUnits === 'number' && (creditUnits < 1 || creditUnits > 6 || !Number.isInteger(creditUnits))) {
-      setCreditError('Credit units must be a whole number between 1 and 6');
+    } else if (typeof creditUnits === 'number' && (creditUnits < 1 || creditUnits > 9 || !Number.isInteger(creditUnits))) {
+      setCreditError('Credit units must be a whole number between 1 and 9');
       isValid = false;
     } else {
       setCreditError('');
@@ -64,7 +64,7 @@ const CourseForm = () => {
         id: Date.now().toString(),
         name: name.trim(),
         creditUnits: typeof creditUnits === 'number' ? creditUnits : 0,
-        grade: grade as 'A' | 'B' | 'C' | 'D' | 'F',
+        grade: grade as 'A' | 'B' | 'C' | 'D' | 'E' | 'F',
       };
 
       addCourse(newCourse);
@@ -85,7 +85,7 @@ const CourseForm = () => {
       setCreditUnits('');
     } else {
       const numValue = parseInt(value, 10);
-      if (!isNaN(numValue) && numValue >= 1 && numValue <= 6) {
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= 9) {
         setCreditUnits(numValue);
       }
     }
@@ -136,6 +136,9 @@ const CourseForm = () => {
                 <SelectItem value="4">4</SelectItem>
                 <SelectItem value="5">5</SelectItem>
                 <SelectItem value="6">6</SelectItem>
+                <SelectItem value="7">7</SelectItem>
+                <SelectItem value="8">8</SelectItem>
+                <SelectItem value="9">9</SelectItem>
               </SelectContent>
             </Select>
             {creditError && (
@@ -147,7 +150,7 @@ const CourseForm = () => {
             <Label htmlFor="grade">Grade*</Label>
             <Select 
               value={grade} 
-              onValueChange={(value) => setGrade(value as 'A' | 'B' | 'C' | 'D' | 'F')}
+              onValueChange={(value) => setGrade(value as 'A' | 'B' | 'C' | 'D' | 'E' | 'F')}
             >
               <SelectTrigger 
                 id="grade" 
@@ -162,6 +165,7 @@ const CourseForm = () => {
                 <SelectItem value="B">B (4.0)</SelectItem>
                 <SelectItem value="C">C (3.0)</SelectItem>
                 <SelectItem value="D">D (2.0)</SelectItem>
+                <SelectItem value="E">E (1.0)</SelectItem>
                 <SelectItem value="F">F (0.0)</SelectItem>
               </SelectContent>
             </Select>
