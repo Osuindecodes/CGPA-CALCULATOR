@@ -7,6 +7,7 @@ export interface Course {
   name: string;
   creditUnits: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  semester: 1 | 2;
 }
 
 interface CGPAState {
@@ -14,6 +15,7 @@ interface CGPAState {
   history: Array<Course[]>;
   historyIndex: number;
   darkMode: boolean;
+  activeSemester: 1 | 2;
 }
 
 type Action = 
@@ -24,6 +26,7 @@ type Action =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'TOGGLE_DARK_MODE' }
+  | { type: 'SET_ACTIVE_SEMESTER'; semester: 1 | 2 }
   | { type: 'LOAD_STATE'; state: CGPAState };
 
 // Initial state
@@ -32,6 +35,7 @@ const initialState: CGPAState = {
   history: [[]],
   historyIndex: 0,
   darkMode: false,
+  activeSemester: 1,
 };
 
 // Grade points mapping
@@ -126,6 +130,10 @@ const cgpaReducer = (state: CGPAState, action: Action): CGPAState => {
       }
       break;
     
+    case 'SET_ACTIVE_SEMESTER':
+      newState = { ...state, activeSemester: action.semester };
+      break;
+
     case 'TOGGLE_DARK_MODE':
       newState = {
         ...state,
@@ -147,6 +155,8 @@ const cgpaReducer = (state: CGPAState, action: Action): CGPAState => {
 };
 
 // Create the context
+interface SemesterStats { totalCredits: number; totalPoints: number; cgpa: number; }
+
 interface CGPAContextType {
   state: CGPAState;
   addCourse: (course: Course) => void;
@@ -156,7 +166,9 @@ interface CGPAContextType {
   undo: () => void;
   redo: () => void;
   toggleDarkMode: () => void;
+  setActiveSemester: (semester: 1 | 2) => void;
   calculateCGPA: () => { totalCredits: number; totalPoints: number; cgpa: number };
+  calculateSemesterGPA: (semester: 1 | 2) => SemesterStats;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -195,23 +207,25 @@ export const CGPAProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state.darkMode]);
 
-  // Calculate CGPA
+  const calculateSemesterGPA = (semester: 1 | 2) => {
+    let totalCredits = 0;
+    let totalPoints = 0;
+    state.courses.filter(c => c.semester === semester).forEach(course => {
+      totalCredits += course.creditUnits;
+      totalPoints += course.creditUnits * gradePoints[course.grade];
+    });
+    return { totalCredits, totalPoints, cgpa: parseFloat((totalCredits > 0 ? totalPoints / totalCredits : 0).toFixed(2)) };
+  };
+
+  // Calculate CGPA (combined across all semesters)
   const calculateCGPA = () => {
     let totalCredits = 0;
     let totalPoints = 0;
-
     state.courses.forEach(course => {
       totalCredits += course.creditUnits;
       totalPoints += course.creditUnits * gradePoints[course.grade];
     });
-
-    const cgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
-
-    return {
-      totalCredits,
-      totalPoints,
-      cgpa: parseFloat(cgpa.toFixed(2)),
-    };
+    return { totalCredits, totalPoints, cgpa: parseFloat((totalCredits > 0 ? totalPoints / totalCredits : 0).toFixed(2)) };
   };
 
   const value = {
@@ -223,7 +237,9 @@ export const CGPAProvider: React.FC<{ children: React.ReactNode }> = ({ children
     undo: () => dispatch({ type: 'UNDO' }),
     redo: () => dispatch({ type: 'REDO' }),
     toggleDarkMode: () => dispatch({ type: 'TOGGLE_DARK_MODE' }),
+    setActiveSemester: (semester: 1 | 2) => dispatch({ type: 'SET_ACTIVE_SEMESTER', semester }),
     calculateCGPA,
+    calculateSemesterGPA,
     canUndo: state.historyIndex > 0,
     canRedo: state.historyIndex < state.history.length - 1,
   };

@@ -39,6 +39,30 @@ const CourseItem: React.FC<{ course: Course }> = ({ course }) => {
   );
 };
 
+const SemesterSection: React.FC<{ semester: 1 | 2; courses: Course[] }> = ({ semester, courses }) => {
+  const { calculateSemesterGPA } = useCGPA();
+  const { cgpa, totalCredits } = calculateSemesterGPA(semester);
+  const semCourses = courses.filter(c => c.semester === semester);
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Semester {semester}</h3>
+        {totalCredits > 0 && (
+          <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+            GPA: {cgpa}
+          </span>
+        )}
+      </div>
+      {semCourses.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-2 pl-1">No courses added for this semester.</p>
+      ) : (
+        semCourses.map(course => <CourseItem key={course.id} course={course} />)
+      )}
+    </div>
+  );
+};
+
 const CourseList = () => {
   const { state, resetAll } = useCGPA();
   const { toast } = useToast();
@@ -46,19 +70,11 @@ const CourseList = () => {
 
   const handleResetAll = () => {
     if (courses.length === 0) {
-      toast({
-        title: "No Courses",
-        description: "There are no courses to reset.",
-      });
+      toast({ title: "No Courses", description: "There are no courses to reset." });
       return;
     }
-    
     resetAll();
-    toast({
-      title: "All Courses Reset",
-      description: "All courses have been removed.",
-      variant: "destructive"
-    });
+    toast({ title: "All Courses Reset", description: "All courses have been removed.", variant: "destructive" });
   };
 
   return (
@@ -76,18 +92,11 @@ const CourseList = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        {courses.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">No courses added yet.</p>
-            <p className="text-xs text-muted-foreground mt-1">Add courses using the form above.</p>
-          </div>
-        ) : (
-          <div className="overflow-y-auto max-h-[280px] pr-1">
-            {courses.map(course => (
-              <CourseItem key={course.id} course={course} />
-            ))}
-          </div>
-        )}
+        <div className="overflow-y-auto max-h-[360px] pr-1">
+          <SemesterSection semester={1} courses={courses} />
+          <div className="border-t my-2" />
+          <SemesterSection semester={2} courses={courses} />
+        </div>
       </CardContent>
     </Card>
   );

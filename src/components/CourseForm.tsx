@@ -10,12 +10,12 @@ import { useCGPA, Course } from '@/context/CGPAContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const CourseForm = () => {
-  const { addCourse } = useCGPA();
+  const { addCourse, state, setActiveSemester } = useCGPA();
   const { toast } = useToast();
   
   const [name, setName] = useState('');
   const [creditUnits, setCreditUnits] = useState<number | ''>('');
-  const [grade, setGrade] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>('');
+  const [grade, setGrade] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | ''>('');
   const [nameError, setNameError] = useState('');
   const [creditError, setCreditError] = useState('');
   const [gradeError, setGradeError] = useState('');
@@ -23,7 +23,6 @@ const CourseForm = () => {
   const validateForm = (): boolean => {
     let isValid = true;
 
-    // Validate course name
     if (!name.trim()) {
       setNameError('Course name is required');
       isValid = false;
@@ -34,7 +33,6 @@ const CourseForm = () => {
       setNameError('');
     }
 
-    // Validate credit units
     if (creditUnits === '') {
       setCreditError('Credit units are required');
       isValid = false;
@@ -45,7 +43,6 @@ const CourseForm = () => {
       setCreditError('');
     }
 
-    // Validate grade
     if (grade === '') {
       setGradeError('Grade is required');
       isValid = false;
@@ -65,15 +62,15 @@ const CourseForm = () => {
         name: name.trim(),
         creditUnits: typeof creditUnits === 'number' ? creditUnits : 0,
         grade: grade as 'A' | 'B' | 'C' | 'D' | 'E' | 'F',
+        semester: state.activeSemester,
       };
 
       addCourse(newCourse);
       toast({
         title: "Course Added",
-        description: `${name} has been added to your course list.`,
+        description: `${name} has been added to Semester ${state.activeSemester}.`,
       });
 
-      // Reset form
       setName('');
       setCreditUnits('');
       setGrade('');
@@ -95,6 +92,22 @@ const CourseForm = () => {
     <Card className="w-full animate-fade-in">
       <CardHeader>
         <CardTitle className="text-xl font-semibold">Add New Course</CardTitle>
+        <div className="flex gap-2 mt-2">
+          {([1, 2] as const).map(sem => (
+            <button
+              key={sem}
+              type="button"
+              onClick={() => setActiveSemester(sem)}
+              className={`flex-1 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                state.activeSemester === sem
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+              }`}
+            >
+              Semester {sem}
+            </button>
+          ))}
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" aria-label="Course entry form">
@@ -130,15 +143,9 @@ const CourseForm = () => {
                 <SelectValue placeholder="Select credit units" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1</SelectItem>
-                <SelectItem value="2">2</SelectItem>
-                <SelectItem value="3">3</SelectItem>
-                <SelectItem value="4">4</SelectItem>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="6">6</SelectItem>
-                <SelectItem value="7">7</SelectItem>
-                <SelectItem value="8">8</SelectItem>
-                <SelectItem value="9">9</SelectItem>
+                {[1,2,3,4,5,6,7,8,9].map(n => (
+                  <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {creditError && (
@@ -176,7 +183,7 @@ const CourseForm = () => {
 
           <Button type="submit" className="w-full">
             <Plus className="w-4 h-4 mr-2" />
-            Add Course
+            Add to Semester {state.activeSemester}
           </Button>
         </form>
       </CardContent>

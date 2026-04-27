@@ -8,11 +8,13 @@ import { Download } from 'lucide-react';
 import { generatePDF } from '@/utils/exportUtils';
 
 const CGPASummary = () => {
-  const { calculateCGPA, state } = useCGPA();
+  const { calculateCGPA, calculateSemesterGPA, state } = useCGPA();
   const { toast } = useToast();
   const { courses } = state;
 
   const { totalCredits, totalPoints, cgpa } = calculateCGPA();
+  const sem1 = calculateSemesterGPA(1);
+  const sem2 = calculateSemesterGPA(2);
 
   // Function to determine CGPA class
   const getCGPAClass = (cgpaValue: number): string => {
@@ -50,6 +52,19 @@ const CGPASummary = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-muted/50 p-3 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground mb-1">Semester 1 GPA</div>
+              <div className="text-xl font-bold">{sem1.cgpa || '—'}</div>
+              <div className="text-xs text-muted-foreground">{sem1.totalCredits} credits</div>
+            </div>
+            <div className="bg-muted/50 p-3 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground mb-1">Semester 2 GPA</div>
+              <div className="text-xl font-bold">{sem2.cgpa || '—'}</div>
+              <div className="text-xs text-muted-foreground">{sem2.totalCredits} credits</div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-muted/50 p-4 rounded-lg">
               <div className="text-sm text-muted-foreground">Total Credits</div>
@@ -62,7 +77,7 @@ const CGPASummary = () => {
           </div>
 
           <div className="bg-primary/10 p-6 rounded-lg text-center">
-            <div className="text-sm text-primary mb-1">Your CGPA</div>
+            <div className="text-sm text-primary mb-1">Cumulative GPA (CGPA)</div>
             <div className="text-4xl font-bold text-primary">{cgpa}</div>
             <div className="text-sm mt-2 font-medium">{getCGPAClass(cgpa)}</div>
           </div>
