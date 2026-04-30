@@ -6,13 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
-import { useCGPA, Course } from '@/context/CGPAContext';
+import { useCGPA, Course, YearNum } from '@/context/CGPAContext';
 import { useToast } from '@/components/ui/use-toast';
 
+const YEARS: YearNum[] = [1, 2, 3, 4, 5, 6];
+
 const CourseForm = () => {
-  const { addCourse, state, setActiveSemester } = useCGPA();
+  const { addCourse, state, setActiveSemester, setActiveYear } = useCGPA();
   const { toast } = useToast();
-  
+
   const [name, setName] = useState('');
   const [creditUnits, setCreditUnits] = useState<number | ''>('');
   const [grade, setGrade] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | ''>('');
@@ -20,11 +22,23 @@ const CourseForm = () => {
   const [creditError, setCreditError] = useState('');
   const [gradeError, setGradeError] = useState('');
 
+  const handleNameChange = (value: string) => {
+    if (/\d/.test(value)) {
+      setNameError('Course name must not contain numbers');
+    } else {
+      setNameError('');
+    }
+    setName(value);
+  };
+
   const validateForm = (): boolean => {
     let isValid = true;
 
     if (!name.trim()) {
       setNameError('Course name is required');
+      isValid = false;
+    } else if (/\d/.test(name)) {
+      setNameError('Course name must not contain numbers');
       isValid = false;
     } else if (name.length > 50) {
       setNameError('Course name must not exceed 50 characters');
@@ -55,7 +69,6 @@ const CourseForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (validateForm()) {
       const newCourse: Course = {
         id: Date.now().toString(),
@@ -63,14 +76,13 @@ const CourseForm = () => {
         creditUnits: typeof creditUnits === 'number' ? creditUnits : 0,
         grade: grade as 'A' | 'B' | 'C' | 'D' | 'E' | 'F',
         semester: state.activeSemester,
+        year: state.activeYear,
       };
-
       addCourse(newCourse);
       toast({
-        title: "Course Added",
-        description: `${name} has been added to Semester ${state.activeSemester}.`,
+        title: 'Course Added',
+        description: `${name} added to Year ${state.activeYear} — Semester ${state.activeSemester}.`,
       });
-
       setName('');
       setCreditUnits('');
       setGrade('');
@@ -82,9 +94,7 @@ const CourseForm = () => {
       setCreditUnits('');
     } else {
       const numValue = parseInt(value, 10);
-      if (!isNaN(numValue) && numValue >= 1 && numValue <= 9) {
-        setCreditUnits(numValue);
-      }
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= 9) setCreditUnits(numValue);
     }
   };
 
@@ -92,53 +102,78 @@ const CourseForm = () => {
     <Card className="w-full animate-fade-in">
       <CardHeader>
         <CardTitle className="text-xl font-semibold">Add New Course</CardTitle>
-        <div className="flex gap-2 mt-2">
-          {([1, 2] as const).map(sem => (
-            <button
-              key={sem}
-              type="button"
-              onClick={() => setActiveSemester(sem)}
-              className={`flex-1 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-                state.activeSemester === sem
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
-              }`}
-            >
-              Semester {sem}
-            </button>
-          ))}
+
+        {/* Year selector */}
+        <div className="mt-3">
+          <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Academic Year</p>
+          <div className="grid grid-cols-6 gap-1">
+            {YEARS.map(yr => (
+              <button
+                key={yr}
+                type="button"
+                onClick={() => setActiveYear(yr)}
+                className={`py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                  state.activeYear === yr
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                }`}
+              >
+                Y{yr}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Semester selector */}
+        <div className="mt-2">
+          <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Semester</p>
+          <div className="flex gap-2">
+            {([1, 2] as const).map(sem => (
+              <button
+                key={sem}
+                type="button"
+                onClick={() => setActiveSemester(sem)}
+                className={`flex-1 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                  state.activeSemester === sem
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                }`}
+              >
+                Semester {sem}
+              </button>
+            ))}
+          </div>
         </div>
       </CardHeader>
+
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" aria-label="Course entry form">
           <div className="space-y-2">
-            <Label htmlFor="course-name">Course Name*</Label>
+            <Label htmlFor="course-name">Course Name</Label>
             <Input
               id="course-name"
               placeholder="Introduction to Software Engineering"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              aria-invalid={nameError ? "true" : "false"}
-              aria-describedby={nameError ? "course-name-error" : undefined}
+              onChange={(e) => handleNameChange(e.target.value)}
+              aria-invalid={nameError ? 'true' : 'false'}
+              aria-describedby={nameError ? 'course-name-error' : undefined}
               maxLength={50}
-              className={nameError ? "border-red-400 focus-visible:ring-red-400" : ""}
+              className={nameError ? 'border-red-400 focus-visible:ring-red-400' : ''}
             />
-            {nameError && (
-              <p id="course-name-error" className="text-sm text-red-400">{nameError}</p>
-            )}
+            {nameError && <p id="course-name-error" className="text-sm text-red-400">{nameError}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="credit-units">Credit Units*</Label>
-            <Select 
-              value={creditUnits !== '' ? creditUnits.toString() : ''} 
+            <Label htmlFor="credit-units">Credit Units</Label>
+            <Select
+              value={creditUnits !== '' ? creditUnits.toString() : ''}
               onValueChange={handleCreditUnitsChange}
             >
-              <SelectTrigger 
-                id="credit-units" 
-                className={creditError ? "border-red-400 focus-visible:ring-red-400" : ""}
-                aria-invalid={creditError ? "true" : "false"}
-                aria-describedby={creditError ? "credit-units-error" : undefined}
+              <SelectTrigger
+                id="credit-units"
+                className={creditError ? 'border-red-400 focus-visible:ring-red-400' : ''}
+                aria-invalid={creditError ? 'true' : 'false'}
+                aria-describedby={creditError ? 'credit-units-error' : undefined}
               >
                 <SelectValue placeholder="Select credit units" />
               </SelectTrigger>
@@ -148,22 +183,20 @@ const CourseForm = () => {
                 ))}
               </SelectContent>
             </Select>
-            {creditError && (
-              <p id="credit-units-error" className="text-sm text-red-400">{creditError}</p>
-            )}
+            {creditError && <p id="credit-units-error" className="text-sm text-red-400">{creditError}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="grade">Grade*</Label>
-            <Select 
-              value={grade} 
+            <Label htmlFor="grade">Grade</Label>
+            <Select
+              value={grade}
               onValueChange={(value) => setGrade(value as 'A' | 'B' | 'C' | 'D' | 'E' | 'F')}
             >
-              <SelectTrigger 
-                id="grade" 
-                className={gradeError ? "border-red-400 focus-visible:ring-red-400" : ""}
-                aria-invalid={gradeError ? "true" : "false"}
-                aria-describedby={gradeError ? "grade-error" : undefined}
+              <SelectTrigger
+                id="grade"
+                className={gradeError ? 'border-red-400 focus-visible:ring-red-400' : ''}
+                aria-invalid={gradeError ? 'true' : 'false'}
+                aria-describedby={gradeError ? 'grade-error' : undefined}
               >
                 <SelectValue placeholder="Select grade" />
               </SelectTrigger>
@@ -176,14 +209,12 @@ const CourseForm = () => {
                 <SelectItem value="F">F (0.0)</SelectItem>
               </SelectContent>
             </Select>
-            {gradeError && (
-              <p id="grade-error" className="text-sm text-red-400">{gradeError}</p>
-            )}
+            {gradeError && <p id="grade-error" className="text-sm text-red-400">{gradeError}</p>}
           </div>
 
           <Button type="submit" className="w-full">
             <Plus className="w-4 h-4 mr-2" />
-            Add to Semester {state.activeSemester}
+            Add to Year {state.activeYear} — Semester {state.activeSemester}
           </Button>
         </form>
       </CardContent>

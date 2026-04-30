@@ -2,12 +2,16 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 
 // Define the types
+export type SemesterNum = 1 | 2;
+export type YearNum = 1 | 2 | 3 | 4 | 5 | 6;
+
 export interface Course {
   id: string;
   name: string;
   creditUnits: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
-  semester: 1 | 2;
+  semester: SemesterNum;
+  year: YearNum;
 }
 
 interface CGPAState {
@@ -15,10 +19,11 @@ interface CGPAState {
   history: Array<Course[]>;
   historyIndex: number;
   darkMode: boolean;
-  activeSemester: 1 | 2;
+  activeSemester: SemesterNum;
+  activeYear: YearNum;
 }
 
-type Action = 
+type Action =
   | { type: 'ADD_COURSE'; course: Course }
   | { type: 'REMOVE_COURSE'; id: string }
   | { type: 'UPDATE_COURSE'; course: Course }
@@ -26,16 +31,17 @@ type Action =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'TOGGLE_DARK_MODE' }
-  | { type: 'SET_ACTIVE_SEMESTER'; semester: 1 | 2 }
+  | { type: 'SET_ACTIVE_SEMESTER'; semester: SemesterNum }
+  | { type: 'SET_ACTIVE_YEAR'; year: YearNum }
   | { type: 'LOAD_STATE'; state: CGPAState };
 
-// Initial state
 const initialState: CGPAState = {
   courses: [],
   history: [[]],
   historyIndex: 0,
   darkMode: false,
   activeSemester: 1,
+  activeYear: 1,
 };
 
 // Grade points mapping
@@ -134,6 +140,10 @@ const cgpaReducer = (state: CGPAState, action: Action): CGPAState => {
       newState = { ...state, activeSemester: action.semester };
       break;
 
+    case 'SET_ACTIVE_YEAR':
+      newState = { ...state, activeYear: action.year };
+      break;
+
     case 'TOGGLE_DARK_MODE':
       newState = {
         ...state,
@@ -155,7 +165,7 @@ const cgpaReducer = (state: CGPAState, action: Action): CGPAState => {
 };
 
 // Create the context
-interface SemesterStats { totalCredits: number; totalPoints: number; cgpa: number; }
+export interface SemesterStats { totalCredits: number; totalPoints: number; cgpa: number; }
 
 interface CGPAContextType {
   state: CGPAState;
@@ -166,9 +176,10 @@ interface CGPAContextType {
   undo: () => void;
   redo: () => void;
   toggleDarkMode: () => void;
-  setActiveSemester: (semester: 1 | 2) => void;
+  setActiveSemester: (semester: SemesterNum) => void;
+  setActiveYear: (year: YearNum) => void;
   calculateCGPA: () => { totalCredits: number; totalPoints: number; cgpa: number };
-  calculateSemesterGPA: (semester: 1 | 2) => SemesterStats;
+  calculateSemesterGPA: (year: YearNum, semester: SemesterNum) => SemesterStats;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -207,10 +218,10 @@ export const CGPAProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state.darkMode]);
 
-  const calculateSemesterGPA = (semester: 1 | 2) => {
+  const calculateSemesterGPA = (year: YearNum, semester: SemesterNum) => {
     let totalCredits = 0;
     let totalPoints = 0;
-    state.courses.filter(c => c.semester === semester).forEach(course => {
+    state.courses.filter(c => c.year === year && c.semester === semester).forEach(course => {
       totalCredits += course.creditUnits;
       totalPoints += course.creditUnits * gradePoints[course.grade];
     });
@@ -237,7 +248,8 @@ export const CGPAProvider: React.FC<{ children: React.ReactNode }> = ({ children
     undo: () => dispatch({ type: 'UNDO' }),
     redo: () => dispatch({ type: 'REDO' }),
     toggleDarkMode: () => dispatch({ type: 'TOGGLE_DARK_MODE' }),
-    setActiveSemester: (semester: 1 | 2) => dispatch({ type: 'SET_ACTIVE_SEMESTER', semester }),
+    setActiveSemester: (semester: SemesterNum) => dispatch({ type: 'SET_ACTIVE_SEMESTER', semester }),
+    setActiveYear: (year: YearNum) => dispatch({ type: 'SET_ACTIVE_YEAR', year }),
     calculateCGPA,
     calculateSemesterGPA,
     canUndo: state.historyIndex > 0,
