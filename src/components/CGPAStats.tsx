@@ -76,7 +76,7 @@ const CGPAStats = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Overall CGPA',   value: overallCGPA,       sub: getCGPAClass(overallCGPA) },
-          { label: 'Total Credits',  value: totalCredits,      sub: `${totalPoints} pts` },
+          { label: 'Total Credits',  value: totalCredits,      sub: `(Total pts: ${totalPoints})` },
           { label: 'Best Semester',  value: best?.gpa ?? '—',  sub: best ? `Year ${best.year} Sem ${best.sem}` : '' },
           { label: 'Worst Semester', value: worst?.gpa ?? '—', sub: worst ? `Year ${worst.year} Sem ${worst.sem}` : '' },
         ].map(({ label, value, sub }) => (
