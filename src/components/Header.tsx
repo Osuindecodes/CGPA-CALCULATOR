@@ -26,7 +26,7 @@ const Header = () => {
     }
     const { totalCredits, totalPoints, cgpa } = calculateCGPA();
     exportToCSV(state.courses, { totalCredits, totalPoints, cgpa });
-    toast({ title: "CSV Generated", description: "Your CGPA report has been downloaded as CSV." });
+    toast({ title: "Excel Generated", description: "Your CGPA report has been downloaded as Excel." });
   };
 
   return (
@@ -74,7 +74,7 @@ const Header = () => {
             className="hidden sm:flex items-center gap-1 transition-all duration-200 hover:scale-105"
           >
             <Save className="h-4 w-4 mr-1" />
-            Export CSV
+            Export Excel
           </Button>
 
           <Button

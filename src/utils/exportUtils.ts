@@ -191,26 +191,163 @@ export const generatePDF = (courses: Course[], summary: CGPASummaryData) => {
 };
 
 export const exportToCSV = (courses: Course[], summary: CGPASummaryData) => {
-  let csvContent = 'Year,Semester,Course Name,Credit Units,Grade,Grade Points,Weighted Points\n';
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const XLSX = require('xlsx');
 
-  courses.forEach(course => {
-    const weighted = course.creditUnits * gradePoints[course.grade];
-    csvContent += `Year ${course.year},Semester ${course.semester},${course.name},${course.creditUnits},${course.grade},${gradePoints[course.grade]},${weighted}\n`;
+  const wb = XLSX.utils.book_new();
+  const activeYears = ([1,2,3,4,5,6] as YearNum[]).filter(yr => courses.some(c => c.year === yr));
+
+  const COLS = ['A','B','C','D','E','F','G'];
+  const COL_HEADERS = ['Course Name','Credit Units','Grade','Grade Points','Weighted Points','',''];
+
+  // helper: set a cell value + optional style tag (stored in cell comment for reference)
+  const setCell = (ws: any, addr: string, value: any, bold = false, bg?: string, align?: string) => {
+    ws[addr] = { v: value, t: typeof value === 'number' ? 'n' : 's' };
+    if (bold || bg || align) {
+      ws[addr].s = {
+        font: bold ? { bold: true, color: { rgb: bg === '0D9488' ? 'FFFFFF' : '0F172A' } } : { color: { rgb: '0F172A' } },
+        fill: bg ? { fgColor: { rgb: bg }, patternType: 'solid' } : undefined,
+        alignment: { horizontal: align ?? 'left', vertical: 'center', wrapText: true },
+        border: {
+          top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+          bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+          left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+          right:  { style: 'thin', color: { rgb: 'CBD5E1' } },
+        },
+      };
+    }
+  };
+
+  const wsData: any = { '!merges': [], '!rows': [], '!cols': [
+    { wch: 40 }, // Course Name
+    { wch: 14 }, // Credit Units
+    { wch: 10 }, // Grade
+    { wch: 14 }, // Grade Points
+    { wch: 16 }, // Weighted Points
+    { wch: 5  },
+    { wch: 5  },
+  ]};
+
+  let row = 1;
+
+  // ── Title row ──────────────────────────────────────────────────────────────
+  setCell(wsData, `A${row}`, 'CGPA ACADEMIC REPORT', true, '0D9488', 'center');
+  for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', false, '0D9488', 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 28 });
+  row++;
+
+  // ── Date row ───────────────────────────────────────────────────────────────
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  setCell(wsData, `A${row}`, `Generated on ${dateStr}`, false, 'CCF1EE', 'center');
+  for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', false, 'CCF1EE', 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 18 });
+  row++;
+
+  // blank spacer
+  wsData['!rows'].push({ hpt: 10 });
+  row++;
+
+  // ── Per-year sections ──────────────────────────────────────────────────────
+  activeYears.forEach(yr => {
+    const yearCourses = courses.filter(c => c.year === yr);
+
+    // Year heading
+    setCell(wsData, `A${row}`, `YEAR ${yr}`, true, 'CCF1EE', 'left');
+    for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', true, 'CCF1EE');
+    wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+    wsData['!rows'].push({ hpt: 20 });
+    row++;
+
+    ([1, 2] as const).forEach(sem => {
+      const semCourses = yearCourses.filter(c => c.semester === sem);
+      if (semCourses.length === 0) return;
+
+      const { totalCredits, totalPoints, cgpa } = calcGPA(semCourses);
+
+      // Semester sub-heading
+      setCell(wsData, `A${row}`, `Semester ${sem}`, true, 'E2F8F6', 'left');
+      for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', true, 'E2F8F6');
+      wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+      wsData['!rows'].push({ hpt: 18 });
+      row++;
+
+      // Column headers
+      COL_HEADERS.slice(0,5).forEach((h, i) => {
+        setCell(wsData, `${COLS[i]}${row}`, h, true, '0D9488', 'center');
+      });
+      wsData['!rows'].push({ hpt: 16 });
+      row++;
+
+      // Course rows
+      semCourses.forEach(c => {
+        setCell(wsData, `A${row}`, c.name, false, undefined, 'left');
+        setCell(wsData, `B${row}`, c.creditUnits, false, undefined, 'center');
+        setCell(wsData, `C${row}`, c.grade, false, undefined, 'center');
+        setCell(wsData, `D${row}`, gradePoints[c.grade], false, undefined, 'center');
+        setCell(wsData, `E${row}`, c.creditUnits * gradePoints[c.grade], false, undefined, 'center');
+        wsData['!rows'].push({ hpt: 15 });
+        row++;
+      });
+
+      // Semester GPA summary row
+      setCell(wsData, `A${row}`, `Semester ${sem} GPA`, true, 'CCF1EE', 'left');
+      setCell(wsData, `B${row}`, totalCredits, true, 'CCF1EE', 'center');
+      setCell(wsData, `C${row}`, '', true, 'CCF1EE', 'center');
+      setCell(wsData, `D${row}`, totalPoints, true, 'CCF1EE', 'center');
+      setCell(wsData, `E${row}`, cgpa, true, 'CCF1EE', 'center');
+      wsData['!rows'].push({ hpt: 16 });
+      row++;
+
+      // spacer between semesters
+      wsData['!rows'].push({ hpt: 8 });
+      row++;
+    });
+
+    // Year summary row
+    const { totalCredits: yc, totalPoints: yp, cgpa: ygpa } = calcGPA(yearCourses);
+    setCell(wsData, `A${row}`, `Year ${yr} Summary`, true, '0D9488', 'left');
+    setCell(wsData, `B${row}`, `Credits: ${yc}`, true, '0D9488', 'center');
+    setCell(wsData, `C${row}`, `Points: ${yp}`, true, '0D9488', 'center');
+    setCell(wsData, `D${row}`, `Year GPA: ${ygpa}`, true, '0D9488', 'center');
+    setCell(wsData, `E${row}`, '', true, '0D9488', 'center');
+    wsData['!rows'].push({ hpt: 18 });
+    row++;
+
+    // spacer between years
+    wsData['!rows'].push({ hpt: 12 });
+    row++;
   });
 
-  csvContent += '\nSummary\n';
-  csvContent += `Total Credit Units,${summary.totalCredits}\n`;
-  csvContent += `Total Grade Points,${summary.totalPoints}\n`;
-  csvContent += `CGPA,${summary.cgpa}\n`;
-  csvContent += `Classification,${getCGPAClass(summary.cgpa)}\n`;
+  // ── Cumulative CGPA ────────────────────────────────────────────────────────
+  setCell(wsData, `A${row}`, 'CUMULATIVE GPA (CGPA)', true, '0D9488', 'center');
+  for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', true, '0D9488', 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 20 });
+  row++;
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', 'CGPA_Report.csv');
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  setCell(wsData, `A${row}`, summary.cgpa, true, 'CCF1EE', 'center');
+  for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', true, 'CCF1EE', 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 24 });
+  row++;
+
+  setCell(wsData, `A${row}`, getCGPAClass(summary.cgpa), true, 'CCF1EE', 'center');
+  for (const col of ['B','C','D','E']) setCell(wsData, `${col}${row}`, '', true, 'CCF1EE', 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 18 });
+  row++;
+
+  // formula note
+  row++;
+  setCell(wsData, `A${row}`, `Formula: CGPA = Total Weighted Points ÷ Total Credit Units   |   Total Credits: ${summary.totalCredits}   |   Total Points: ${summary.totalPoints}`, false, undefined, 'center');
+  wsData['!merges'].push({ s: { r: row-1, c: 0 }, e: { r: row-1, c: 4 } });
+  wsData['!rows'].push({ hpt: 14 });
+
+  // set sheet ref range
+  wsData['!ref'] = `A1:E${row}`;
+
+  XLSX.utils.book_append_sheet(wb, wsData, 'CGPA Report');
+  XLSX.writeFile(wb, 'CGPA_Report.xlsx');
 };
