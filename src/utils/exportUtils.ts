@@ -128,7 +128,7 @@ export const generatePDF = (courses: Course[], summary: CGPASummaryData) => {
         },
       });
 
-      y = doc.lastAutoTable.finalY + 6;
+      y = doc.lastAutoTable.finalY + 14;
     });
 
     // Year summary box

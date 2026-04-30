@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
 import { useCGPA, Course, YearNum } from '@/context/CGPAContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -213,7 +212,6 @@ const CourseForm = () => {
           </div>
 
           <Button type="submit" className="w-full">
-            <Plus className="w-4 h-4 mr-2" />
             Add to Year {state.activeYear} — Semester {state.activeSemester}
           </Button>
         </form>
