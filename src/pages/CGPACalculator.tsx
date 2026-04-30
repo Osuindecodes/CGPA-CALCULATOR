@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import CourseForm from '@/components/CourseForm';
 import CourseList from '@/components/CourseList';
 import CGPASummary from '@/components/CGPASummary';
+import CGPAStats from '@/components/CGPAStats';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const CGPACalculator = () => {
@@ -36,6 +37,13 @@ const CGPACalculator = () => {
           <div className="animate-fade-in [animation-delay:600ms]">
             <ErrorBoundary>
               <CourseList />
+            </ErrorBoundary>
+          </div>
+
+          <div className="mt-6">
+            <h2 className="text-2xl font-bold mb-4 animate-fade-in [animation-delay:650ms]">Statistics</h2>
+            <ErrorBoundary>
+              <CGPAStats />
             </ErrorBoundary>
           </div>
         </div>
