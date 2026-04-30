@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CourseForm from '@/components/CourseForm';
@@ -9,11 +9,25 @@ import CGPAStats from '@/components/CGPAStats';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const CGPACalculator = () => {
+  // Scroll progress bar
+  useEffect(() => {
+    const bar = document.getElementById('scroll-progress');
+    if (!bar) return;
+    const update = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = total > 0 ? `${(window.scrollY / total) * 100}%` : '0%';
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
+      <div id="scroll-progress" />
       <Header />
       <main className="container mx-auto px-4 py-6 flex-grow pt-24">
         <div className="max-w-4xl mx-auto">
+
           <h1 className="text-3xl font-bold text-center mb-3 animate-fade-in [animation-delay:100ms]">
             CGPA Calculator
           </h1>
@@ -22,19 +36,19 @@ const CGPACalculator = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="animate-fade-in [animation-delay:300ms]">
+            <div className="animate-fade-in [animation-delay:300ms] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg rounded-xl">
               <ErrorBoundary>
                 <CourseForm />
               </ErrorBoundary>
             </div>
-            <div className="animate-fade-in [animation-delay:450ms]">
+            <div className="animate-fade-in [animation-delay:450ms] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg rounded-xl">
               <ErrorBoundary>
                 <CGPASummary />
               </ErrorBoundary>
             </div>
           </div>
 
-          <div className="animate-fade-in [animation-delay:600ms] mb-6">
+          <div className="animate-fade-in [animation-delay:600ms] mb-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg rounded-xl">
             <ErrorBoundary>
               <CourseList />
             </ErrorBoundary>
@@ -46,6 +60,7 @@ const CGPACalculator = () => {
               <CGPAStats />
             </ErrorBoundary>
           </div>
+
         </div>
       </main>
       <Footer />
