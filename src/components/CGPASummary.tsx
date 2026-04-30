@@ -61,12 +61,12 @@ const CGPASummary = () => {
                     <div className="bg-background/70 p-2 rounded-md text-center">
                       <div className="text-xs text-muted-foreground">Sem 1</div>
                       <div className="text-base font-bold">{s1.cgpa || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{s1.totalCredits} cr</div>
+                      <div className="text-xs text-muted-foreground">{s1.totalCredits} credits</div>
                     </div>
                     <div className="bg-background/70 p-2 rounded-md text-center">
                       <div className="text-xs text-muted-foreground">Sem 2</div>
                       <div className="text-base font-bold">{s2.cgpa || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{s2.totalCredits} cr</div>
+                      <div className="text-xs text-muted-foreground">{s2.totalCredits} credits</div>
                     </div>
                   </div>
                 </div>
