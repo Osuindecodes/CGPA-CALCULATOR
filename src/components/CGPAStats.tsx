@@ -115,10 +115,7 @@ const CGPAStats = () => {
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map(({ label, value, decimals, sub, icon }, i) => (
-          <div
-            key={label}
-            className={`reveal-scale stat-card delay-${(i + 1) * 100}`}
-          >
+          <div key={label} className="stat-card">
             <Card className="text-center h-full border-primary/10 overflow-hidden relative">
               {/* Subtle top accent line */}
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
@@ -139,7 +136,7 @@ const CGPAStats = () => {
 
       {/* ── Charts ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="reveal-left delay-100 card-glow rounded-xl">
+        <div className="card-glow rounded-xl">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -170,7 +167,7 @@ const CGPAStats = () => {
           </Card>
         </div>
 
-        <div className="reveal-right delay-200 card-glow rounded-xl">
+        <div className="card-glow rounded-xl">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -207,7 +204,7 @@ const CGPAStats = () => {
       </div>
 
       {/* ── Year breakdown table ── */}
-      <div className="reveal delay-100 card-glow rounded-xl">
+      <div className="card-glow rounded-xl">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
