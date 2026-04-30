@@ -37,63 +37,63 @@ const CGPASummary = () => {
   };
 
   return (
-    <Card className="w-full animate-fade-in">
-      <CardHeader>
+    <Card className="w-full animate-fade-in flex flex-col">
+      <CardHeader className="pb-3">
         <CardTitle className="text-xl font-semibold">CGPA Summary</CardTitle>
         <CardDescription>CGPA = Total Grade Points / Total Credit Units</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="flex-1 flex flex-col gap-3">
 
-          {/* Per-year semester breakdown */}
+        {/* Per-year semester breakdown — scrollable so it never overflows */}
+        <div className="overflow-y-auto max-h-[220px] pr-1 space-y-2">
           {activeYears.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">No courses added yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">No courses added yet.</p>
           ) : (
             activeYears.map(yr => {
               const s1 = calculateSemesterGPA(yr, 1);
               const s2 = calculateSemesterGPA(yr, 2);
               return (
-                <div key={yr}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                <div key={yr} className="bg-muted/30 rounded-lg p-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
                     Year {yr}
                   </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-muted/50 p-3 rounded-lg text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Semester 1</div>
-                      <div className="text-xl font-bold">{s1.cgpa || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{s1.totalCredits} credits</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-background/70 p-2 rounded-md text-center">
+                      <div className="text-xs text-muted-foreground">Sem 1</div>
+                      <div className="text-base font-bold">{s1.cgpa || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{s1.totalCredits} cr</div>
                     </div>
-                    <div className="bg-muted/50 p-3 rounded-lg text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Semester 2</div>
-                      <div className="text-xl font-bold">{s2.cgpa || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{s2.totalCredits} credits</div>
+                    <div className="bg-background/70 p-2 rounded-md text-center">
+                      <div className="text-xs text-muted-foreground">Sem 2</div>
+                      <div className="text-base font-bold">{s2.cgpa || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{s2.totalCredits} cr</div>
                     </div>
                   </div>
                 </div>
               );
             })
           )}
-
-          {/* Totals */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground">Total Credits</div>
-              <div className="text-2xl font-bold">{totalCredits}</div>
-            </div>
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground">Total Points</div>
-              <div className="text-2xl font-bold">{totalPoints}</div>
-            </div>
-          </div>
-
-          {/* Overall CGPA */}
-          <div className="bg-primary/10 p-6 rounded-lg text-center">
-            <div className="text-sm text-primary mb-1">Cumulative GPA (CGPA)</div>
-            <div className="text-4xl font-bold text-primary">{cgpa}</div>
-            <div className="text-sm mt-2 font-medium">{getCGPAClass(cgpa)}</div>
-          </div>
-
         </div>
+
+        {/* Totals */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <div className="text-xs text-muted-foreground">Total Credits</div>
+            <div className="text-xl font-bold">{totalCredits}</div>
+          </div>
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <div className="text-xs text-muted-foreground">Total Points</div>
+            <div className="text-xl font-bold">{totalPoints}</div>
+          </div>
+        </div>
+
+        {/* Overall CGPA */}
+        <div className="bg-primary/10 p-4 rounded-lg text-center">
+          <div className="text-xs text-primary mb-1">Cumulative GPA (CGPA)</div>
+          <div className="text-4xl font-bold text-primary">{cgpa}</div>
+          <div className="text-sm mt-1 font-medium">{getCGPAClass(cgpa)}</div>
+        </div>
+
       </CardContent>
       <CardFooter className="border-t pt-4 flex justify-end">
         <Button onClick={handleExportPDF} variant="outline" className="flex items-center gap-2">

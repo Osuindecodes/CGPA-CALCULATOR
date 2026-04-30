@@ -35,7 +35,7 @@ const CGPACalculator = () => {
             Track your academic performance and calculate your Cumulative Grade Point Average
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 md:items-start">
             <div className="animate-fade-in [animation-delay:300ms] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg rounded-xl">
               <ErrorBoundary>
                 <CourseForm />
