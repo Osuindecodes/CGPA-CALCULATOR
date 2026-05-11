@@ -22,11 +22,7 @@ const CourseForm = () => {
   const [gradeError, setGradeError] = useState('');
 
   const handleNameChange = (value: string) => {
-    if (/\d/.test(value)) {
-      setNameError('Course name must not contain numbers');
-    } else {
-      setNameError('');
-    }
+    setNameError('');
     setName(value);
   };
 
@@ -35,9 +31,6 @@ const CourseForm = () => {
 
     if (!name.trim()) {
       setNameError('Course name is required');
-      isValid = false;
-    } else if (/\d/.test(name)) {
-      setNameError('Course name must not contain numbers');
       isValid = false;
     } else if (name.length > 50) {
       setNameError('Course name must not exceed 50 characters');
